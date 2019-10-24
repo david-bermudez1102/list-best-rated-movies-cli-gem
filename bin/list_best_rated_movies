@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require './lib/list_best_rated_movies.rb'
+
+ListBestRatedMovies::CLI.new.call
