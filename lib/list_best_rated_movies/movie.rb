@@ -5,11 +5,11 @@ class ListBestRatedMovies::Movie
 
     def initialize(name,genre=nil,year,rt_score,imdb_score)
         @name = name
-        @genre = genre
+        self.genre = genre if(genre!=nil)
         @year = year
         @rt_score = rt_score
         @imdb_score = imdb_score
-       self.save
+        @@all << self
     end
 
     def self.all
@@ -29,7 +29,7 @@ class ListBestRatedMovies::Movie
     end
 
     def genres
-        Genre.all.select {|genre| genre.movies == self} # A movie can have many genres
+        ListBestRatedMovies::Genre.all.select {|genre| genre.movies == self} # A movie can have many genres
     end
     
     def genre=(genre)

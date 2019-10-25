@@ -37,6 +37,6 @@ class ListBestRatedMovies::Genre
     end
 
     def movies
-        Movie.all.select {|movie| movie.genre == self}
+        ListBestRatedMovies::Movie.all.select {|movie| movie.genre == self}
     end
 end
