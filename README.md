@@ -1,15 +1,14 @@
 # ListBestRatedMovies
 
-CLI will help user to check the best top rated movies by genre/year and see the full description of the movie they pick
+CLI will help user to check the best top rated movies of all times with their full description, rating score andlink, organized by genre/year of the movie they pick
 
 
-Program will scrape data from https://www.rottentomatoes.com/top/bestofrt/top_100_#{genre}_movies/ and 
-https://www.imdb.com/search/title/?genres=#{genre}&explore=title_type,genres to get the best movies by genre/ year and get their 
-title, description, scores, etc
+Program will scrape data from https://www.rottentomatoes.com/top/bestofrt/top_100_#{genre}_movies/ to get the best movies by genre/ year and get their title, description, scores, etc
 
-Program will prompt user what genre they want to check the best movies with
-If user inputs comedy, We'll scrape into https://www.rottentomatoes.com/top/bestofrt/top_100_comedy_movies/
-If user inputs all, We'll scrape into all genre links available at https://www.rottentomatoes.com/top/bestofrt/top_100_#{genre}_movies/
+Program will prompt user what genre they want to input:
+
+ - If user inputs comedy, We'll scrape into https://www.rottentomatoes.com/top/bestofrt/top_100_comedy_movies/
+ - If user inputs a genre that is not on the genres list, we'll prompt user to enter a valid genre 
 
 Program will prompt user what year they want to check the best movies with
 If user inputs 2018, We'll only show the movies of that year based on the genre user inputs above
@@ -19,16 +18,12 @@ The full list will show grouped by score as follows
 	Title: movie_title
 	Genre: movie_genre
 	Year: movie_year
-	Score: rotten_tomatoes, IMDB, number of reviews in rotten tomatoes
+	Score: rotten_tomatoes, number of reviews in rotten tomatoes
 	Description: movie_description
 	movie_link
 
 CLI will prompt user new options
-	- If user wants to check one of the listed movies in more detail, input the name
-	- If user wants to organize by Alphabet asc/desc
-	- If user wants to organize by Rotten Tomatoes score input rt of RT
-	- If user wants to organize by IMDB score input rt of RT
-	- If user wants to start over
+	- If user wants to input another genre start over
 
 ## Installation
 

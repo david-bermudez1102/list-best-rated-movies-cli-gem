@@ -6,7 +6,7 @@ class ListBestRatedMovies::Genre
     def initialize(name)
         @name = name
         @movies = []
-        self.class.save
+        @@all << self
     end
 
     def self.all
