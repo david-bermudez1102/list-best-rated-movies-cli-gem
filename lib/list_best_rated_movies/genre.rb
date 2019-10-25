@@ -6,8 +6,7 @@ class ListBestRatedMovies::Genre
     def initialize(name)
         @name = name
         @movies = []
-        @@all << self
-
+        self.class.save
     end
 
     def self.all
@@ -15,28 +14,15 @@ class ListBestRatedMovies::Genre
     end
 
     def self.save
-        @@all << self
+        self.all << self
     end
 
     def self.reset_all
-        @@all.clear
+        self.all.clear
     end
 
     def self.count
         self.all.count
     end
 
-    def new_movie(movie)
-        if(!movie.genre)
-            movie.genre = self
-        end
-      
-        if(!self.movies.include?movie)
-            self.movies << movie
-        end
-    end
-
-    def movies
-        ListBestRatedMovies::Movie.all.select {|movie| movie.genre == self}
-    end
 end

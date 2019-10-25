@@ -1,14 +1,15 @@
 class ListBestRatedMovies::Movie
-    attr_reader :name, :genre, :year, :rt_score, :imdb_score
+    attr_reader :name, :genre, :year, :rt_score, :imdb_score, :description
 
     @@all = []
 
-    def initialize(name,genre=nil,year,rt_score,imdb_score)
+    def initialize(name,genre=nil,year,rt_score,imdb_score, description)
         @name = name
         self.genre = genre if(genre!=nil)
         @year = year
         @rt_score = rt_score
         @imdb_score = imdb_score
+        @description = description
         @@all << self
     end
 
@@ -17,21 +18,17 @@ class ListBestRatedMovies::Movie
     end
 
     def self.save
-        @@all << self
+        self.all.save << self
     end
 
     def self.reset_all
-        @@all.clear
+       self.all.clear
     end
 
     def self.count
         self.all.count
     end
 
-    def genres
-        ListBestRatedMovies::Genre.all.select {|genre| genre.movies == self} # A movie can have many genres
-    end
-    
     def genre=(genre)
         @genre = genre
         if(!genre.movies.include?self)

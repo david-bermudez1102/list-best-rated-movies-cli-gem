@@ -1,3 +1,5 @@
+require 'colorize'
+
 class ListBestRatedMovies::CLI
     def call
         puts <<-DOC.gsub /^\s*/, ''
