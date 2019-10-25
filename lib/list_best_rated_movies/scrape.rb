@@ -31,7 +31,15 @@ class ListBestRatedMovies::Scrape
 
     
     def get_data
-        rt_data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{@genre}_movies/") # RottenTomatoes data
+        
+        if(@genre.include?("&"))
+            genre_2 = @genre.split(" & ")
+            genre_2 = "#{genre_2[0]}__#{genre_2[1]}"
+            rt_data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{genre_2}_movies/") # RottenTomatoes data
+        else
+            rt_data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{@genre}_movies/")  # RottenTomatoes data
+        end
+        
         genre = ListBestRatedMovies::Genre.all.detect {|g| !!g.name.match(/\b#{@genre}\b/)}
 
         rt_data.css("div.panel-body.content_body.allow-overflow table.table").each { |movie|
@@ -39,16 +47,19 @@ class ListBestRatedMovies::Scrape
                 name = cell.css("a.unstyled.articleLink").text.strip.split(" (")[0].to_s
                 year = cell.css("a.unstyled.articleLink").text.strip.split(" (")[1].to_s.gsub(/[)]/, "").to_i
                 rt_score = cell.css("span.tMeterIcon.tiny span.tMeterScore").text.gsub("\u00A0", "")
-                
-                if(cell.css("a.unstyled.articleLink").text != "")
-                    if(@year=="all")
-                        url_2 = url("https://www.rottentomatoes.com#{cell.css("a.unstyled.articleLink").attribute("href").value}")
-                        description = url_2.css("#movieSynopsis.movie_synopsis.clamp.clamp-6.js-clamp").text.strip
-                        create_movie(name,genre,year,rt_score,description)
-                    elsif(year==@year)
-                        url_2 = url("https://www.rottentomatoes.com#{cell.css("a.unstyled.articleLink").attribute("href").value}")
-                        description = url_2.css("#movieSynopsis.movie_synopsis.clamp.clamp-6.js-clamp").text.strip
-                        create_movie(name,genre,year,rt_score,description)
+
+                # This will prevent page to get reloaded if objects already exist 
+                if(!ListBestRatedMovies::Movie.all.detect{|movie| movie.name==name && movie.genre==genre && movie.year==year})
+                    if(cell.css("a.unstyled.articleLink").text != "")
+                        if(@year=="all")
+                            url_2 = url("https://www.rottentomatoes.com#{cell.css("a.unstyled.articleLink").attribute("href").value}")
+                            description = url_2.css("#movieSynopsis.movie_synopsis.clamp.clamp-6.js-clamp").text.strip
+                            create_movie(name,genre,year,rt_score,description)
+                        elsif(year==@year)
+                            url_2 = url("https://www.rottentomatoes.com#{cell.css("a.unstyled.articleLink").attribute("href").value}")
+                            description = url_2.css("#movieSynopsis.movie_synopsis.clamp.clamp-6.js-clamp").text.strip
+                            create_movie(name,genre,year,rt_score,description)
+                        end
                     end
                 end
             }   
@@ -61,7 +72,9 @@ class ListBestRatedMovies::Scrape
     end
 
     def create_movie(name,genre,year,rt_score,description)
-        ListBestRatedMovies::Movie.new(name,genre,year,rt_score,description)
+        if(!ListBestRatedMovies::Movie.all.detect{|movie| movie.name==name && movie.genre==genre && movie.year==year})
+            ListBestRatedMovies::Movie.new(name,genre,year,rt_score,description)
+        end
     end
 
 end

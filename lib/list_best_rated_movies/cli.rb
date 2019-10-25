@@ -1,7 +1,5 @@
 require_relative './scrape.rb'
 
-
-
 class ListBestRatedMovies::CLI
 
     def initialize
@@ -20,7 +18,7 @@ class ListBestRatedMovies::CLI
     def list_genres
         puts ""
         @genres.each.with_index(1){|genre,index|
-            puts "#{index}.".red+" #{genre.name}"
+            puts "#{index}.".red+" #{genre.name.capitalize}"
         }
         set_genre
     end
@@ -43,15 +41,15 @@ class ListBestRatedMovies::CLI
     def set_year(genre)
         puts ""
         year = gets.chomp
-        if(year.to_i>1800 || year=="all")
-            @scrape.genre = genre.name
-            @scrape.year = year
+        if(year.to_i>1800 || year.to_s.downcase=="all")
+            @scrape.genre = genre.name.downcase
+            year=="all" ? @scrape.year = year : @scrape.year = year.to_i
             if(year=="all")
                 puts ""
                 puts "Loading all years. It might take a while....".blue
             end
             @scrape.get_data
-            show_results
+            show_results(genre,year)
         else
             puts ""
             puts "The year is not valid. Please enter a valid year"
@@ -59,11 +57,17 @@ class ListBestRatedMovies::CLI
         end
     end
 
-    def show_results
+    def show_results(genre,year)
         puts ""
         puts "Here are few of the best movies we found:".red
         puts ""
-        ListBestRatedMovies::Movie.all.each.with_index(1) { |movie,index|
+
+        movie_by_genre = ListBestRatedMovies::Movie.find_by_genre_and_year(genre,year.to_i) #If user chooses a specific year, will only choose those results
+        if year=="all"
+            movie_by_genre = ListBestRatedMovies::Movie.find_all_by_genre(genre) #Otherwise, all results of that genre will be listed
+        end
+
+        movie_by_genre.each.with_index(1) { |movie,index|
             puts "#{index}. #{movie.name}".green
             puts "-------------------------------------------------------------------------------------------------"
             puts "Genre:".red+" #{movie.genre.name.capitalize}"
@@ -76,6 +80,24 @@ class ListBestRatedMovies::CLI
             puts "-------------------------------------------------------------------------------------------------"
             puts ""
         }
+        go_again
     end
+
+    def go_again
+        puts "Do you want to select another genre? Enter Yes or No"
+        puts ""
+        input = gets.chomp
+        if(input=="yes") 
+            call
+        elsif(input=="no")
+            exit
+        else
+            puts ""
+            puts "Please enter a vaild response".red
+            puts ""
+            go_again
+        end
+    end
+    
 end
 ListBestRatedMovies::CLI.new.call

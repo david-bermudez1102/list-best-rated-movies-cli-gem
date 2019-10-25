@@ -34,7 +34,12 @@ class ListBestRatedMovies::Movie
     def self.reset_all
        self.all.clear
     end
-    def find_by_name(name)
-        self.all.find {|o| o.name == name}
+
+    def self.find_all_by_genre(genre)
+        self.all.select {|o| o.genre == genre}
+    end
+
+    def self.find_by_genre_and_year(genre,year)
+        self.all.select {|o| o.genre == genre && o.year == year}
     end
 end
