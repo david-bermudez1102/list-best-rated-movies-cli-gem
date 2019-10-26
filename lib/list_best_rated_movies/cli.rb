@@ -100,4 +100,3 @@ class ListBestRatedMovies::CLI
     end
     
 end
-ListBestRatedMovies::CLI.new.call

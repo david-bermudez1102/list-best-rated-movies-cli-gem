@@ -1,4 +1,8 @@
+require_relative "../concerns/memorable.rb"
+
 class ListBestRatedMovies::Movie
+    extend Memorable::ClassMethods
+
     attr_reader :name, :genre, :year, :rt_score, :description
 
     @@all = []
@@ -16,24 +20,12 @@ class ListBestRatedMovies::Movie
         @@all
     end
 
-    def self.count
-        self.all.count
-    end
-
     def genre=(genre)
         @genre = genre
         if(!genre.movies.include?self)
             genre.movies << self
         end
       end
-
-    def self.save
-        self.all << self
-    end
-
-    def self.reset_all
-       self.all.clear
-    end
 
     def self.find_all_by_genre(genre)
         self.all.select {|o| o.genre == genre}

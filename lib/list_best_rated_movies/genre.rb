@@ -1,4 +1,7 @@
+require_relative "../concerns/memorable.rb"
 class ListBestRatedMovies::Genre
+    extend Memorable::ClassMethods
+
     attr_reader :name, :movies
 
     @@all = []
@@ -12,17 +15,4 @@ class ListBestRatedMovies::Genre
     def self.all
         @@all
     end
-
-    def self.save
-        self.all << self
-    end
-
-    def self.reset_all
-        self.all.clear
-    end
-
-    def self.count
-        self.all.count
-    end
-
 end
