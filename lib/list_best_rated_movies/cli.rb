@@ -3,8 +3,8 @@ require_relative './scrape.rb'
 class ListBestRatedMovies::CLI
 
     def initialize
-        @scrape = ListBestRatedMovies::Scrape.new
-        @genres = @scrape.genres
+        @scraper = ListBestRatedMovies::Scraper.new
+        @genres = @scraper.scrape_genres
     end
 
     def call
@@ -42,13 +42,13 @@ class ListBestRatedMovies::CLI
         puts ""
         year = gets.chomp
         if(year.to_i>1800 || year.to_s.downcase=="all")
-            @scrape.genre = genre.name.downcase
-            year=="all" ? @scrape.year = year : @scrape.year = year.to_i
+            @scraper.genre = genre.name.downcase
+            year=="all" ? @scraper.year = year : @scraper.year = year.to_i
             if(year=="all")
                 puts ""
                 puts "Loading all years. It might take a while....".blue
             end
-            @scrape.get_data
+            @scraper.scrape
             show_results(genre,year)
         else
             puts ""

@@ -6,18 +6,21 @@ require_relative './version.rb'
 require_relative './genre.rb'
 require_relative './movie.rb'
 
-class ListBestRatedMovies::Scrape
+class ListBestRatedMovies::Scraper
     attr_accessor :genre, :year
 
     def initialize
-        @data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_horror_movies/")
+        
     end
     
-    def genres
+    def scrape_genres
         genres = []
-        @data.css("div.btn-group.btn-primary-border-dropdown ul.dropdown-menu li").each {|li|
-            if(!genres.detect {|g| g.name.include?(li.css("a").text.strip.to_s.downcase)})
-                genres << create_genre(li.css("a").text.strip.to_s.downcase)
+        genres_data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_horror_movies/") #Where we are obtaining our genres from
+        genres_data.css("div.btn-group.btn-primary-border-dropdown ul.dropdown-menu li").each {|li|
+            genre = scrape_genre(li)
+
+            if !genres.detect {|g| g.name.include?(genre)}
+                genres << ListBestRatedMovies::Genre.new(genre)
             end     
         }
         genres
@@ -29,51 +32,75 @@ class ListBestRatedMovies::Scrape
         data
     end
 
-    
-    def get_data
-        
+    def data
         if(@genre.include?("&"))
             genre_2 = @genre.split(" & ")
             genre_2 = "#{genre_2[0]}__#{genre_2[1]}"
-            rt_data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{genre_2}_movies/") # RottenTomatoes data
+            data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{genre_2}_movies/") # RottenTomatoes data
         else
-            rt_data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{@genre}_movies/")  # RottenTomatoes data
+            data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{@genre}_movies/")  # RottenTomatoes data
         end
-        
-        genre = ListBestRatedMovies::Genre.all.detect {|g| !!g.name.match(/\b#{@genre}\b/)}
 
-        rt_data.css("div.panel-body.content_body.allow-overflow table.table").each { |movie|
+        data
+    end
+    
+    def scrape
+        data = self.data
+        genre = self.get_genre
+        data.css("div.panel-body.content_body.allow-overflow table.table").each { |movie|
             movie.css("tr").each { |cell|
-                name = cell.css("a.unstyled.articleLink").text.strip.split(" (")[0].to_s
-                year = cell.css("a.unstyled.articleLink").text.strip.split(" (")[1].to_s.gsub(/[)]/, "").to_i
-                rt_score = cell.css("span.tMeterIcon.tiny span.tMeterScore").text.gsub("\u00A0", "")
-
-                # This will prevent page to get reloaded if objects already exist 
-                if(!ListBestRatedMovies::Movie.all.detect{|movie| movie.name==name && movie.genre==genre && movie.year==year})
-                    if(cell.css("a.unstyled.articleLink").text != "")
-                        if(@year=="all")
-                            url_2 = url("https://www.rottentomatoes.com#{cell.css("a.unstyled.articleLink").attribute("href").value}")
-                            description = url_2.css("#movieSynopsis.movie_synopsis.clamp.clamp-6.js-clamp").text.strip
-                            create_movie(name,genre,year,rt_score,description)
-                        elsif(year==@year)
-                            url_2 = url("https://www.rottentomatoes.com#{cell.css("a.unstyled.articleLink").attribute("href").value}")
-                            description = url_2.css("#movieSynopsis.movie_synopsis.clamp.clamp-6.js-clamp").text.strip
-                            create_movie(name,genre,year,rt_score,description)
-                        end
-                    end
-                end
+                name = scrape_name(cell)
+                year = scrape_year(cell)
+                score = scrape_score(cell)
+                save_movie(cell,name,genre,year,score)
             }   
         }
+    end
     
+    def scrape_name(data)
+        name = data.css("a.unstyled.articleLink").text.strip.split(" (")[0].to_s
+        name
     end
 
-    def create_genre(name)
-        ListBestRatedMovies::Genre.new(name)
+    def scrape_genre(data)
+        genre = data.css("a").text.strip.to_s.downcase
+        genre
     end
 
-    def create_movie(name,genre,year,rt_score,description)
-        if(!ListBestRatedMovies::Movie.all.detect{|movie| movie.name==name && movie.genre==genre && movie.year==year})
-            ListBestRatedMovies::Movie.new(name,genre,year,rt_score,description)
+    def scrape_year(data)
+        year = data.css("a.unstyled.articleLink").text.strip.split(" (")[1].to_s.gsub(/[)]/, "").to_i
+        year
+    end
+
+    def scrape_score(data)
+        score = data.css("span.tMeterIcon.tiny span.tMeterScore").text.gsub("\u00A0", "")
+        score
+    end
+
+    def get_genre
+        genre = ListBestRatedMovies::Genre.all.detect {|g| !!g.name.match(/\b#{@genre}\b/)}
+        genre
+    end
+
+    def scrape_description(data)
+        movie_link = data.css("a.unstyled.articleLink").attribute("href").value
+        url = url("https://www.rottentomatoes.com#{movie_link}")
+        description = url.css("#movieSynopsis.movie_synopsis.clamp.clamp-6.js-clamp").text.strip
+        description
+    end
+
+    def save_movie(data,name,genre,year,score)
+        # This will prevent page to get reloaded if object already exists 
+        if(!ListBestRatedMovies::Movie.all.detect{|movie| movie.name==name && movie.genre==genre && movie.year==year})              
+            if(data.css("a.unstyled.articleLink").text != "")
+                if(@year=="all")
+                    description = scrape_description(data)
+                    ListBestRatedMovies::Movie.new(name,genre,year,score,description)
+                elsif(year==@year)
+                    description = scrape_description(data)
+                    ListBestRatedMovies::Movie.new(name,genre,year,score,description)
+                end
+            end
         end
     end
 
