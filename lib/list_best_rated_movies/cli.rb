@@ -1,4 +1,5 @@
-require_relative './scrape.rb'
+require_relative '../list_best_rated_movies.rb'
+require 'colorize'
 
 class ListBestRatedMovies::CLI
 
@@ -9,7 +10,7 @@ class ListBestRatedMovies::CLI
 
     def call
         puts ""
-        puts "Welcome! We'll help you to get the list of the best movies based on ratings by RottenTomatoes.com and you can filter by Genre and Year!".green
+        puts "Welcome! We'll help you to get the list of the best movies based on ratings by RottenTomatoes.com. You can filter by Genre and Year!".green
         puts ""
         puts "Which of the following genres would you like to choose? Input the genre you want".green
         list_genres
@@ -25,8 +26,12 @@ class ListBestRatedMovies::CLI
 
     def set_genre
         puts ""
+        puts "If you'd rather see Today'S Top Rated Movies, enter today"
+        puts ""
         genre = gets.chomp
-        if(ListBestRatedMovies::Genre.all.detect {|g| g.name.match(/\b#{genre}\b/)})
+        if(genre.downcase=="today") #If user prefer to see today's best rated movies, we'll skip the rest and go directly to results
+            show_results(genre)
+        elsif(ListBestRatedMovies::Genre.all.detect {|g| g.name.match(/\b#{genre}\b/)})
             genre = ListBestRatedMovies::Genre.all.detect {|g| g.name.match(/\b#{genre}\b/)}
             puts ""
             puts "Enter the year. (For all the years, enter all):"
@@ -57,7 +62,7 @@ class ListBestRatedMovies::CLI
         end
     end
 
-    def show_results(genre,year)
+    def show_results(genre,year=nil)
         puts ""
         puts "Here are few of the best movies we found:".red
         puts ""
@@ -67,16 +72,35 @@ class ListBestRatedMovies::CLI
             movie_by_genre = ListBestRatedMovies::Movie.find_all_by_genre(genre) #Otherwise, all results of that genre will be listed
         end
 
-        movie_by_genre.each.with_index(1) { |movie,index|
-            puts "#{index}. #{movie.name}".green
+        if(genre.downcase=="today") 
+            ListBestRatedMovies::CertifiedFresh.new.scrape
+            movie_by_genre = ListBestRatedMovies::Movie.find_by_latest_and_year.uniq
+        end
+
+        movie_by_genre.each.with_index(1) { |movie,i|
+
+        genres = ListBestRatedMovies::Genre.find_by_movie_name(movie.name)
+
+            genre = ""
+            genres.each.with_index {|g,index|
+                if (index==0)
+                    genre << g.name.capitalize
+                else
+                    genre << ", #{g.name.capitalize}"
+                end
+            }
+
+            puts "#{i}. #{movie.name}".green
             puts "-------------------------------------------------------------------------------------------------"
-            puts "Genre:".red+" #{movie.genre.name.capitalize}"
+            puts "Genre:".red+" #{genre}"
             puts "Year:".red+" #{movie.year}"
-            puts "Rotten Tomatoes Score:".red+" #{movie.rt_score}"
+            puts "Rotten Tomatoes Score:".red+" #{movie.score}"
             desc_red = "Description:".red
             puts <<~HEREDOC
             #{desc_red} #{movie.description}
             HEREDOC
+            puts "Directed By:".red+" #{movie.director}"
+            puts "Link:".red+" #{movie.link}"
             puts "-------------------------------------------------------------------------------------------------"
             puts ""
         }
@@ -89,7 +113,9 @@ class ListBestRatedMovies::CLI
         input = gets.chomp
         if(input=="yes") 
             call
-        elsif(input=="no")
+        elsif(input=="no" || input=="exit")
+            ListBestRatedMovies::Movie.reset_all
+            ListBestRatedMovies::Genre.reset_all
             exit
         else
             puts ""

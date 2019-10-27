@@ -1,2 +1,6 @@
 require_relative './list_best_rated_movies/version.rb'
 require_relative './list_best_rated_movies/cli.rb'
+require_relative './list_best_rated_movies/genre.rb'
+require_relative './list_best_rated_movies/movie.rb'
+require_relative './list_best_rated_movies/scraper.rb'
+require_relative './list_best_rated_movies/certified_fresh.rb'

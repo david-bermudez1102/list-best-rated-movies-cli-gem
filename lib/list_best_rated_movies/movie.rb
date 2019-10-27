@@ -3,16 +3,19 @@ require_relative "../concerns/memorable.rb"
 class ListBestRatedMovies::Movie
     extend Memorable::ClassMethods
 
-    attr_reader :name, :genre, :year, :rt_score, :description
+    attr_reader :name, :genre, :year, :score, :description, :director, :link, :latest
 
     @@all = []
 
-    def initialize(name,genre=nil,year,rt_score,description)
+    def initialize(name,genre=nil,year,score,description,director,link,latest)
         @name = name
         self.genre = genre if(genre!=nil)
         @year = year
-        @rt_score = rt_score
+        @score = score
         @description = description
+        @director = director
+        @link = link
+        @latest = latest
         @@all << self
     end
 
@@ -34,4 +37,11 @@ class ListBestRatedMovies::Movie
     def self.find_by_genre_and_year(genre,year)
         self.all.select {|o| o.genre == genre && o.year == year}
     end
+
+    def self.find_by_latest_and_year
+        self.all.map{ |movie|
+            self.all.detect {|o| o.latest && o.name==movie.name}
+        }
+    end
+    
 end
