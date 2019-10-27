@@ -61,4 +61,4 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/[david
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [https://github.com/david-bermudez1102/list-best-rated-movies-cli-gem/blob/master/LICENSE.txt](https://opensource.org/licenses/MIT).
