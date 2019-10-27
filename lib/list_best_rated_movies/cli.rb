@@ -6,6 +6,7 @@ class ListBestRatedMovies::CLI
     def initialize
         @scraper = ListBestRatedMovies::Scraper.new
         @genres = @scraper.scrape_genres
+        @certified_fresh = ListBestRatedMovies::CertifiedFresh.new
     end
 
     def call
@@ -30,7 +31,8 @@ class ListBestRatedMovies::CLI
         puts ""
         genre = gets.chomp
         if(genre.downcase=="today") #If user prefer to see today's best rated movies, we'll skip the rest and go directly to results
-            show_results(genre)
+            @certified_fresh.scrape
+            show_results(genre,nil)
         elsif(ListBestRatedMovies::Genre.all.detect {|g| g.name.match(/\b#{genre}\b/)})
             genre = ListBestRatedMovies::Genre.all.detect {|g| g.name.match(/\b#{genre}\b/)}
             puts ""
@@ -67,32 +69,30 @@ class ListBestRatedMovies::CLI
         puts "Here are few of the best movies we found:".red
         puts ""
 
-        movie_by_genre = ListBestRatedMovies::Movie.find_by_genre_and_year(genre,year.to_i) #If user chooses a specific year, will only choose those results
         if year=="all"
             movie_by_genre = ListBestRatedMovies::Movie.find_all_by_genre(genre) #Otherwise, all results of that genre will be listed
+        elsif genre=="today"
+            movie_by_genre = ListBestRatedMovies::Movie.find_by_latest_and_name
+        else
+            movie_by_genre = ListBestRatedMovies::Movie.find_by_genre_and_year(genre,year.to_i) #If user chooses a specific year, will only choose those results
         end
-
-        if(genre.downcase=="today") 
-            ListBestRatedMovies::CertifiedFresh.new.scrape
-            movie_by_genre = ListBestRatedMovies::Movie.find_by_latest_and_year.uniq
-        end
-
+        
         movie_by_genre.each.with_index(1) { |movie,i|
 
-        genres = ListBestRatedMovies::Genre.find_by_movie_name(movie.name)
+        genre_list = ListBestRatedMovies::Genre.find_by_movie_name(movie.name)
 
-            genre = ""
-            genres.each.with_index {|g,index|
+            g = ""
+            genre_list.each.with_index {|e,index|
                 if (index==0)
-                    genre << g.name.capitalize
+                    g << e.name.capitalize
                 else
-                    genre << ", #{g.name.capitalize}"
+                    g << ", #{e.name.capitalize}"
                 end
             }
 
             puts "#{i}. #{movie.name}".green
             puts "-------------------------------------------------------------------------------------------------"
-            puts "Genre:".red+" #{genre}"
+            puts "Genre:".red+" #{g}"
             puts "Year:".red+" #{movie.year}"
             puts "Rotten Tomatoes Score:".red+" #{movie.score}"
             desc_red = "Description:".red
@@ -114,8 +114,6 @@ class ListBestRatedMovies::CLI
         if(input=="yes") 
             call
         elsif(input=="no" || input=="exit")
-            ListBestRatedMovies::Movie.reset_all
-            ListBestRatedMovies::Genre.reset_all
             exit
         else
             puts ""

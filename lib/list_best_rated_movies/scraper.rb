@@ -61,6 +61,9 @@ class ListBestRatedMovies::Scraper
 
     def scrape_year(data)
         year = data.css("a.unstyled.articleLink").text.strip.split(" (")[1].to_s.gsub(/[)]/, "").to_i
+        if(year==0)
+            year = data.css("a.unstyled.articleLink").text.strip.split(" (")[2].to_s.gsub(/[)]/, "").to_i
+        end
         year
     end
 

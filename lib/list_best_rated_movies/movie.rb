@@ -38,10 +38,12 @@ class ListBestRatedMovies::Movie
         self.all.select {|o| o.genre == genre && o.year == year}
     end
 
-    def self.find_by_latest_and_year
-        self.all.map{ |movie|
-            self.all.detect {|o| o.latest && o.name==movie.name}
+    def self.find_by_latest_and_name
+        movies = []
+        self.all.each{ |movie|
+            movies << movie if movie.latest    
         }
+        movies.uniq { |movie| movie.name }
     end
     
 end
