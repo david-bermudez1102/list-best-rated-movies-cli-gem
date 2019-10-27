@@ -11,7 +11,7 @@ class ListBestRatedMovies::CLI
 
     def call
         puts ""
-        puts "Welcome! We'll help you to get the list of the best movies based on ratings by RottenTomatoes.com. You can filter by Genre and Year!".green
+        puts "Welcome! We'll help you to get the list of the best movies based on ratings by RottenTomatoes.com. You can filter by Genre and Year!".colorize(:background => :blue)
         puts ""
         puts "Which of the following genres would you like to choose? Input the genre you want".green
         list_genres
@@ -27,20 +27,23 @@ class ListBestRatedMovies::CLI
 
     def set_genre
         puts ""
-        puts "If you'd rather see Today'S Top Rated Movies, enter today"
+        puts "If you'd rather see Today's Top Rated Movies, enter today".colorize(:background => :blue)
         puts ""
         genre = gets.chomp
         if(genre.downcase=="today") #If user prefer to see today's best rated movies, we'll skip the rest and go directly to results
+            puts ""
+            puts "Loading Today's Top Rated Movies. It might take a while....".blue
+            puts ""
             @certified_fresh.scrape
             show_results(genre,nil)
         elsif(ListBestRatedMovies::Genre.all.detect {|g| g.name.match(/\b#{genre}\b/)})
             genre = ListBestRatedMovies::Genre.all.detect {|g| g.name.match(/\b#{genre}\b/)}
             puts ""
-            puts "Enter the year. (For all the years, enter all):"
+            puts "Enter the year. (For all the years, enter all):".colorize(:background => :blue)
             set_year(genre)
         else
             puts ""
-            puts "The genre doesn't exist. Please enter one of the genres that match with one of the genres above"
+            puts "The genre doesn't exist. Please enter one of the genres that match with one of the genres above".colorize(:background => :red)
             set_genre
         end
     end
@@ -66,17 +69,17 @@ class ListBestRatedMovies::CLI
 
     def show_results(genre,year=nil)
         puts ""
-        puts "Here are few of the best movies we found:".red
+        puts "Here are few of the best movies we found:".colorize(:background => :green)
         puts ""
 
         if year=="all"
-            movie_by_genre = ListBestRatedMovies::Movie.find_all_by_genre(genre) #Otherwise, all results of that genre will be listed
+            movie_by_genre = ListBestRatedMovies::Movie.find_all_by_genre(genre) #all results related with that genre will be listed
         elsif genre=="today"
-            movie_by_genre = ListBestRatedMovies::Movie.find_by_latest_and_name
+            movie_by_genre = ListBestRatedMovies::Movie.find_by_latest_and_name #If user wants today's best rated movies 
         else
             movie_by_genre = ListBestRatedMovies::Movie.find_by_genre_and_year(genre,year.to_i) #If user chooses a specific year, will only choose those results
         end
-        
+
         movie_by_genre.each.with_index(1) { |movie,i|
 
         genre_list = ListBestRatedMovies::Genre.find_by_movie_name(movie.name)
@@ -90,7 +93,7 @@ class ListBestRatedMovies::CLI
                 end
             }
 
-            puts "#{i}. #{movie.name}".green
+            puts "#{i}. #{movie.name.upcase}".colorize(:background => :blue)
             puts "-------------------------------------------------------------------------------------------------"
             puts "Genre:".red+" #{g}"
             puts "Year:".red+" #{movie.year}"
@@ -108,7 +111,7 @@ class ListBestRatedMovies::CLI
     end
 
     def go_again
-        puts "Do you want to select another genre? Enter Yes or No"
+        puts "Do you want to select another genre? Enter Yes or No".blue
         puts ""
         input = gets.chomp
         if(input=="yes") 
