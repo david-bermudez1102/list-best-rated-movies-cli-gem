@@ -75,7 +75,7 @@ class ListBestRatedMovies::CLI
         if year=="all"
             movie_by_genre = ListBestRatedMovies::Movie.find_all_by_genre(genre) #all results related with that genre will be listed
         elsif genre=="today"
-            movie_by_genre = ListBestRatedMovies::Movie.find_by_latest.uniq { |movie| movie.name } #If user wants today's best rated movies 
+            movie_by_genre = ListBestRatedMovies::Movie.find_by_latest #If user wants today's best rated movies 
         else
             movie_by_genre = ListBestRatedMovies::Movie.find_by_genre_and_year(genre,year.to_i) #If user chooses a specific year, will only choose those results
         end
@@ -126,4 +126,4 @@ class ListBestRatedMovies::CLI
         end
     end
     
-end
+end 

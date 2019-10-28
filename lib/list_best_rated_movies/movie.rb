@@ -39,7 +39,10 @@ class ListBestRatedMovies::Movie
     end
 
     def self.find_by_latest
-        self.all.collect{ |movie| movie if movie.latest }
+        movies = []
+        self.all.each{ |movie|
+            movies << movie if movie.latest    
+        }
+        movies.uniq { |movie| movie.name }
     end
-    
 end

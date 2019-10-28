@@ -24,9 +24,9 @@ class ListBestRatedMovies::Scraper
     end
 
     def data
-        if(@genre.include?("&"))
-            genre_2 = @genre.split(" & ")
-            genre_2 = "#{genre_2[0]}__#{genre_2[1]}"
+        if(!!@genre.match?(/[^0-9a-zA-Z]/))
+            genre_2 = @genre.gsub(/\s/,"_")
+            genre_2 = genre_2.gsub(/&/,"")
             data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{genre_2}_movies/") # RottenTomatoes data
         else
             data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_#{@genre}_movies/")  # RottenTomatoes data
