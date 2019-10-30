@@ -5,16 +5,11 @@ class ListBestRatedMovies::Scraper
     attr_accessor :genre, :year
     
     def scrape_genres
-        genres = []
         genres_data = url("https://www.rottentomatoes.com/top/bestofrt/top_100_horror_movies/") #Where we are obtaining our genres from
-        genres_data.css("div.btn-group.btn-primary-border-dropdown ul.dropdown-menu li").each {|li|
-            genre = scrape_genre(li)
-
-            if !genres.detect {|g| g.name.include?(genre)}
-                genres << ListBestRatedMovies::Genre.new(genre)
-            end     
+        genres_data.css("div.btn-group.btn-primary-border-dropdown ul.dropdown-menu li").map {|li|
+            genre_name = li.css("a").text.strip.downcase
+            ListBestRatedMovies::Genre.find_or_create_by_name(genre_name)
         }
-        genres
     end
 
     def url(url)
@@ -37,14 +32,13 @@ class ListBestRatedMovies::Scraper
     
     def scrape
         data = self.data
-        genre = self.get_genre(@genre)
         data.css("div.panel-body.content_body.allow-overflow table.table").each { |movie|
             movie.css("tr").each { |cell|
                 name = scrape_name(cell)
                 year = scrape_year(cell)
                 score = scrape_score(cell) 
                 link = scrape_link(cell)
-                save_movie(cell,name,genre,year,score,link)
+                save_movie(cell,name,year,score,link)
             }   
         }
     end
@@ -55,8 +49,9 @@ class ListBestRatedMovies::Scraper
     end
 
     def scrape_genre(data)
-        genre = data.css("a").text.strip.to_s.downcase
-        genre
+        data.css("ul.content-meta.info li:contains('Genre:') div.meta-value a").map{ |genre|
+            genre.text.strip.to_s.downcase
+        }   
     end
 
     def scrape_year(data)
@@ -103,18 +98,20 @@ class ListBestRatedMovies::Scraper
         url
     end
 
-    def save_movie(data,name,genre,year,score,link)
+    def save_movie(data,name,year,score,link)
         # This will prevent page to get reloaded if object already exists 
-        if(!ListBestRatedMovies::Movie.all.detect{|movie| movie.name==name && movie.genre==genre && movie.year==year})
+        if(!ListBestRatedMovies::Movie.all.detect{|movie| movie.name==name && movie.year==year})
             if(data.css("a.unstyled.articleLink").text != "")
                 if(@year=="all")
                     description = scrape_description(movie_link(data))
                     director = scrape_director(movie_link(data))
-                    ListBestRatedMovies::Movie.new(name,genre,year,score,description,director,link,false)
+                    genres = scrape_genre(movie_link(data)).map { |genre_name| get_genre(genre_name) }
+                    ListBestRatedMovies::Movie.new(name,genres,year,score,description,director,link,false)
                 elsif(year==@year)
                     description = scrape_description(movie_link(data))
                     director = scrape_director(movie_link(data))
-                    ListBestRatedMovies::Movie.new(name,genre,year,score,description,director,link,false)
+                    genres = scrape_genre(movie_link(data)).map { |genre_name| get_genre(genre_name) }
+                    ListBestRatedMovies::Movie.new(name,genres,year,score,description,director,link,false)
                 end
             end
         end

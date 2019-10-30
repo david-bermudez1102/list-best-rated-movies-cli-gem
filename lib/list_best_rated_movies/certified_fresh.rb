@@ -22,12 +22,10 @@ class ListBestRatedMovies::CertifiedFresh < ListBestRatedMovies::Scraper
                 score = scrape_score(url)
                 description = scrape_description(url)
                 director = scrape_director(url)
-                genres = scrape_genre(url)
-
-                genres.each { |genre_name|
-                    genre = get_genre(genre_name)
-                    ListBestRatedMovies::Movie.new(name,genre,year,score,description,director,link,true)
+                genres = scrape_genre(url).map { |genre_name|
+                    get_genre(genre_name)  
                 }
+                ListBestRatedMovies::Movie.new(name,genres,year,score,description,director,link,true)
             end
             
         }
@@ -36,12 +34,6 @@ class ListBestRatedMovies::CertifiedFresh < ListBestRatedMovies::Scraper
     def scrape_name(data)
         name = data.css("h1.mop-ratings-wrap__title.mop-ratings-wrap__title--top").text.strip.to_s
         name
-    end
-
-    def scrape_genre(data)
-        data.css("ul.content-meta.info li:contains('Genre:') div.meta-value a").map{ |genre|
-            genre.text.strip.to_s.downcase
-        }   
     end
 
     def scrape_year(data)

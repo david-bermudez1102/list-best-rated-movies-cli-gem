@@ -82,20 +82,9 @@ class ListBestRatedMovies::CLI
 
         movie_by_genre.each.with_index(1) { |movie,i|
 
-        genre_list = ListBestRatedMovies::Genre.find_by_movie_name(movie.name)
-
-            g = ""
-            genre_list.each.with_index {|e,index|
-                if (index==0)
-                    g << e.name.capitalize
-                else
-                    g << ", #{e.name.capitalize}"
-                end
-            }
-
             puts "#{i}. #{movie.name.upcase}".colorize(:background => :blue)
             puts "-------------------------------------------------------------------------------------------------"
-            puts "Genre:".red+" #{g}"
+            puts "Genre:".red+" #{movie.genre_list}"
             puts "Year:".red+" #{movie.year}"
             puts "Rotten Tomatoes Score:".red+" #{movie.score}"
             desc_red = "Description:".red
